@@ -19,7 +19,7 @@ function getCidsArray()
 {
     // Returns an array of CIDs
     $cids = getPostVar('cid');
-    return array_filter(explode(",", $cids));
+    return array_filter(explode(",", trim($cids)));
 }
 
 function getPostVar($key)

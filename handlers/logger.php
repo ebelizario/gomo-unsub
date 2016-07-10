@@ -26,4 +26,20 @@ class Logger
     {
         return strftime("%m/%d/%Y @ %I:%M:%S%p", time());
     }
+
+    public function printHeader($sessionId, $csvFile, $cids=array())
+    {
+        $this->log("=== Processing started ===");
+        $this->log("SESSIONID: $sessionId");
+        $this->log("CSV FILE: " . $csvFile);
+        if (count($cids) > 0)
+        {
+            $this->log("CIDs: " . implode(",", $cids));
+        }
+    }
+
+    public function printFooter()
+    {
+        $this->log("=== Processing finished ===");
+    }
 }

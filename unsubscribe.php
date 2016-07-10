@@ -13,7 +13,10 @@ require_once(__ROOT__ . '/handlers/csv.php');
 require_once(__ROOT__ . '/handlers/logger.php');
 require_once(__ROOT__ . '/util.php');
 
+// Create logger
 $logger = new Logger($config['logpath'], $config['logsuffix']);
+
+// Unsubscribe engine
 main($config, $logger);
 
 function main($config, $logger)
@@ -22,10 +25,11 @@ function main($config, $logger)
     $cids = getCidsArray();
     $subType = getPostVar('subtype');
 
+    // TODO: Add validation
+
     // Initiate handlers
     $csv = new FileHandler();
-    $gomoApi = new GomoHandler($config['url'], $subType);
-    $sessionId = $gomoApi->getSessionId($config['username'], $config['password']);
+    $gomoApi = new GomoHandler($config['url'], $config['username'], $config['password'], $subType);
 
     // Upload file
     $csv->uploadFile($_FILES);
@@ -35,10 +39,11 @@ function main($config, $logger)
         returnHomeError();
     }
 
-    $logger->log("=== Processing started ===");
-    $logger->log("SESSIONID: $sessionId");
-    $logger->log("CSV FILE: " . $csv->getUserFilename());
-    $logger->log("CIDs (?): " . implode(",", $cids));
+    $logger->printHeader(
+        $gomoApi->getSessionId(),
+        $csv->getUserFilename(),
+        $cids
+    );
 
     $subscriberData = $csv->getUserDataArrayFromFile();
     foreach ($subscriberData as $subData)
@@ -49,43 +54,33 @@ function main($config, $logger)
             if ($subType == 'mobile')
             {
                 // Get all known SIDS for this subscriber
-                $knownUserIds = $gomoApi->getAllKnownIdsByMobile($sessionId, $subData);
+                $knownUserIds = $gomoApi->getAllKnownIdsByMobile($subData);
             }
             else if ($subType == 'id')
             {
                 // Get all known SIDS for this subscriber
                 $knownUserIds = array($subData);
             }
-            $fields = array(
-                'sessionid' => "$sessionId",
-                'action'    => "unsubscribeFromCID"
-            );
             foreach ($cids as $cid){
                 foreach ($knownUserIds as $sid){
-                    $fields['sid'] = $sid;
-                    $fields['cid'] = $cid;
-                    $output = $gomoApi->callApi($fields);
+                    $output = $gomoApi->unsubscribeFromCid($sid, $cid);
                     $status = $output->status;
-                    $msg = "Unsubscribing $subData ($sid) from $cid";
+                    $message = $output->message;
+                    $msg = "Unsubscribing $subData ($sid) from $cid ... [$status:$message]";
                     $logger->log($msg);
                 }
             }
         }
         else
         {
-            $argKey = $gomoApi->argument;
             // Otherwise, go the traditional route
-            $fields = array(
-                'sessionid' => $sessionId,
-                'action'    => $gomoApi->action,
-                "$argKey"   => $subData
-            );
-            $output = $gomoApi->callApi($fields);
-            $total = $output->affected_rows;
+            $output = $gomoApi->runUserApiCall($subData);
+            $total  = $output->affected_rows;
             $status = $output->status;
-            $msg = "Unsubscribing $subData: " . $total . " row affected";
+            $message = $output->message;
+            $msg    = "Unsubscribing $subData ... [$status:$message]: " . $total . " row affected";
             $logger->log($msg);
         }
     }
-    $logger->log("=== Processing finished ===");
+    $logger->printFooter();
 }
