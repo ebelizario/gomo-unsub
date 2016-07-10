@@ -8,7 +8,7 @@ class ApiAdapter
     {
         $this->handler = $this->getCurl($url);
     }
-    
+
     private function getCurl($url)
     {
         // Returns curl handler
