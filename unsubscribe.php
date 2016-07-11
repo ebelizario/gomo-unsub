@@ -13,12 +13,17 @@ require_once(__ROOT__ . '/handlers/csv.php');
 require_once(__ROOT__ . '/handlers/logger.php');
 require_once(__ROOT__ . '/util.php');
 
-// Create logger
-$logger = new Logger($config['logpath'], $config['logsuffix']);
 
-// Unsubscribe engine
+/**
+ * Start unsubscribe engine
+ */
+$logger = new Logger($config['logpath'], $config['logsuffix']);
 main($config, $logger);
 
+
+/**
+ * Main function
+ */
 function main($config, $logger)
 {
     checkWasNotPosted();
@@ -29,7 +34,12 @@ function main($config, $logger)
 
     // Initiate handlers
     $csv = new FileHandler();
-    $gomoApi = new GomoHandler($config['url'], $config['username'], $config['password'], $subType);
+    $gomoApi = new GomoHandler(
+        $config['url'],
+        $config['username'],
+        $config['password'],
+        $subType
+    );
 
     // Upload file
     $csv->uploadFile($_FILES);
@@ -63,10 +73,11 @@ function main($config, $logger)
             }
             foreach ($cids as $cid){
                 foreach ($knownUserIds as $sid){
-                    $output = $gomoApi->unsubscribeFromCid($sid, $cid);
-                    $status = $output->status;
+                    $output  = $gomoApi->unsubscribeFromCid($sid, $cid);
+                    $status  = $output->status;
                     $message = $output->message;
-                    $msg = "Unsubscribing $subData ($sid) from $cid ... [$status:$message]";
+                    $msg     = "Unsubscribing {$subData} ({$sid}) from {$cid}" .
+                               " ... [{$status}:{$message}]";
                     $logger->info($msg);
                 }
             }
@@ -74,11 +85,12 @@ function main($config, $logger)
         else
         {
             // Otherwise, go the traditional route
-            $output = $gomoApi->runUserApiCall($subData);
-            $total  = $output->affected_rows;
-            $status = $output->status;
+            $output  = $gomoApi->runUserApiCall($subData);
+            $total   = $output->affected_rows;
+            $status  = $output->status;
             $message = $output->message;
-            $msg    = "Unsubscribing $subData ... [$status:$message]: " . $total . " row affected";
+            $msg     = "Unsubscribing {$subData} ... [{$status}:{$message}]:" .
+                       "{$total} row affected";
             $logger->info($msg);
         }
     }

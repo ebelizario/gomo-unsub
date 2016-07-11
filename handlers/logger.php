@@ -48,11 +48,11 @@ class Logger
     {
         if ($output)
         {
-            echo $msg . "<br />";
+            echo "{$msg}<br />";
         }
         $msg = "[{$level}] {$msg}";
         $handler = fopen($this->logfile, 'a');
-        fwrite($handler, $this->_getTimestamp() . " (UTC) : " . $msg . "\r\n");
+        fwrite($handler, $this->_getTimestamp() . " (UTC): {$msg}\r\n");
     }
 
     private function _getTimestamp()
@@ -63,8 +63,8 @@ class Logger
     public function printHeader($sessionId, $csvFile, $cids=array())
     {
         $this->info("=== Processing started ===");
-        $this->info("SESSIONID: $sessionId");
-        $this->info("CSV FILE: " . $csvFile);
+        $this->info("SESSIONID: {$sessionId}");
+        $this->info("CSV FILE: {$csvFile}");
         if (count($cids) > 0)
         {
             $this->info("CIDs: " . implode(",", $cids));

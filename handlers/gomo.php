@@ -11,7 +11,7 @@ class GomoHandler extends ApiAdapter
     {
         $this->getAction($subType);
         parent::__construct($url);
-        $this->sessionId = $this->getApiSession($user, $pass);
+        $this->sessionId = $this->_getApiSession($user, $pass);
     }
 
     public function getSessionId()
@@ -19,7 +19,7 @@ class GomoHandler extends ApiAdapter
         return $this->sessionId;
     }
 
-    private function getApiSession($username, $password)
+    private function _getApiSession($username, $password)
     {
         // Returns a session ID
         $fields = array(
@@ -36,8 +36,8 @@ class GomoHandler extends ApiAdapter
     {
         // Returns an array of known IDs by mobile
         $fields = array(
-            'sessionid' => "$this->sessionId",
-            'action'    => "getUserIDfromMobile",
+            'sessionid' => $this->sessionId,
+            'action'    => 'getUserIDfromMobile',
             'mobile'    => $mobile
         );
         $output = $this->callApi($fields);
@@ -71,7 +71,7 @@ class GomoHandler extends ApiAdapter
     {
         $argKey = $this->argument;
         $fields = array(
-            'sessionid' => "$this->sessionId",
+            'sessionid' => $this->sessionId,
             'action'    => $this->action,
             "$argKey"   => $subscriberData
         );
@@ -81,7 +81,7 @@ class GomoHandler extends ApiAdapter
     public function unsubscribeFromCid($sid, $cid)
     {
         $fields = array(
-            'sessionid' => "$this->sessionId",
+            'sessionid' => $this->sessionId,
             'action'    => "unsubscribeFromCID",
             'sid'       => $sid,
             'cid'       => $cid
