@@ -70,6 +70,13 @@ function main($config, $logger)
             {
                 // Get all known SIDS for this subscriber
                 $knownUserIds = $gomoApi->getAllKnownIdsByMobile($subData);
+                if (count($knownUserIds) == 0)
+                {
+                    $logger->warning("Subscriber not found for {$subData}. ".
+                                     " Skipping.", $output=true);
+                    continue;
+                }
+
             }
             else if ($subType == 'id')
             {

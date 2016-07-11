@@ -41,7 +41,7 @@ class GomoHandler extends ApiAdapter
             'mobile'    => $mobile
         );
         $output = $this->callApi($fields);
-        return explode(",", $output->id);
+        return array_filter(explode(",", $output->id));
     }
 
     public function getAction($subType)
