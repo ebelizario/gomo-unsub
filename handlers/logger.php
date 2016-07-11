@@ -50,14 +50,15 @@ class Logger
         {
             echo "{$msg}<br />";
         }
-        $msg = "[{$level}] {$msg}";
+        $timestamp = $this->_getTimestamp();
+        $msg = "{$timestamp} {$level} : {$msg}\r\n";
         $handler = fopen($this->logfile, 'a');
-        fwrite($handler, $this->_getTimestamp() . " (UTC): {$msg}\r\n");
+        fwrite($handler, $msg);
     }
 
     private function _getTimestamp()
     {
-        return strftime("%m/%d/%Y @ %I:%M:%S%p", time());
+        return strftime("%m/%d/%Y %I:%M:%S%p", time());
     }
 
     public function printHeader($sessionId, $csvFile, $cids=array())
