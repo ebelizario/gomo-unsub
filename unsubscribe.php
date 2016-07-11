@@ -17,7 +17,11 @@ require_once(__ROOT__ . '/util.php');
 /**
  * Start unsubscribe engine
  */
-$logger = new Logger($config['logpath'], $config['logsuffix']);
+$logger = new Logger(
+    $config['logpath'],
+    $config['logsuffix'],
+    $config['loglevel']
+);
 main($config, $logger);
 
 
@@ -39,7 +43,7 @@ function main($config, $logger)
         $config['username'],
         $config['password'],
         $subType
-    );
+   );
 
     // Upload file
     $csv->uploadFile($_FILES);
@@ -52,7 +56,8 @@ function main($config, $logger)
     $logger->printHeader(
         $gomoApi->getSessionId(),
         $csv->getUserFilename(),
-        $cids
+        $cids,
+        $output=true
     );
 
     $subscriberData = $csv->getUserDataArrayFromFile();
@@ -73,26 +78,30 @@ function main($config, $logger)
             }
             foreach ($cids as $cid){
                 foreach ($knownUserIds as $sid){
+                    $logger->info("Unsubscribing {$subData} ({$sid})" .
+                                  " from {$cid}", $output=true);
                     $output  = $gomoApi->unsubscribeFromCid($sid, $cid);
-                    $status  = $output->status;
-                    $message = $output->message;
-                    $msg     = "Unsubscribing {$subData} ({$sid}) from {$cid}" .
-                               " ... [{$status}:{$message}]";
-                    $logger->info($msg);
+                    if ($output->statuscode > 0)
+                    {
+                        $msg = "{$output->message}";
+                        $logger->error($msg);
+                    }
                 }
             }
         }
         else
         {
             // Otherwise, go the traditional route
+            $logger->info("Unsubscribing {$subData}", $output=true);
             $output  = $gomoApi->runUserApiCall($subData);
             $total   = $output->affected_rows;
-            $status  = $output->status;
-            $message = $output->message;
-            $msg     = "Unsubscribing {$subData} ... [{$status}:{$message}]:" .
-                       "{$total} row affected";
-            $logger->info($msg);
+            $logger->debug("{$total} rows affected");
+            if ($output->statuscode > 0)
+            {
+                $msg = "{$output->message}";
+                $logger->error($msg);
+            }
         }
     }
-    $logger->printFooter();
+    $logger->printFooter($output=true);
 }
