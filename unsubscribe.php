@@ -67,7 +67,7 @@ function main($config, $logger)
                     $status = $output->status;
                     $message = $output->message;
                     $msg = "Unsubscribing $subData ($sid) from $cid ... [$status:$message]";
-                    $logger->log($msg);
+                    $logger->info($msg);
                 }
             }
         }
@@ -79,7 +79,7 @@ function main($config, $logger)
             $status = $output->status;
             $message = $output->message;
             $msg    = "Unsubscribing $subData ... [$status:$message]: " . $total . " row affected";
-            $logger->log($msg);
+            $logger->info($msg);
         }
     }
     $logger->printFooter();
